@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Voice-enabled multilingual RAG system supporting English, Hindi, and Tamil queries on MSMARCO-XI dataset">
+    <title>VoiceRAG — Multilingual Voice Search</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <!-- Background animated gradient -->
+    <div class="bg-gradient"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <circle cx="16" cy="16" r="14" stroke="url(#grad)" stroke-width="2.5"/>
+                        <path d="M10 20 L16 10 L22 20" stroke="url(#grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="16" cy="22" r="2" fill="url(#grad)"/>
+                        <defs>
+                            <linearGradient id="grad" x1="0" y1="0" x2="32" y2="32">
+                                <stop offset="0%" stop-color="#818cf8"/>
+                                <stop offset="100%" stop-color="#c084fc"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h1>VoiceRAG</h1>
+                <span class="badge">Multilingual</span>
+            </div>
+            <p class="subtitle">Ask questions in English, Hindi, or Tamil — by voice or text</p>
+        </header>
+
+        <!-- Main content -->
+        <main class="main">
+            <!-- Language selector -->
+            <div class="controls">
+                <div class="language-select">
+                    <label for="language">Language</label>
+                    <select id="language">
+                        <option value="">Auto-detect</option>
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Voice input area -->
+            <div class="input-area">
+                <div class="mic-container">
+                    <button id="micBtn" class="mic-btn" aria-label="Start recording">
+                        <svg class="mic-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                        <div class="pulse-ring"></div>
+                        <div class="pulse-ring delay"></div>
+                    </button>
+                    <span id="micStatus" class="mic-status">Click to speak</span>
+                </div>
+
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <!-- Text input -->
+                <div class="text-input-container">
+                    <input type="text" id="textInput" placeholder="Type your question here..." autocomplete="off">
+                    <button id="sendBtn" class="send-btn" aria-label="Send query">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"/>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results area -->
+            <div id="resultsArea" class="results-area hidden">
+                <!-- Transcript -->
+                <div id="transcriptCard" class="result-card transcript-card hidden">
+                    <div class="card-header">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                        <h3>Transcription</h3>
+                        <span id="transcriptLang" class="lang-badge"></span>
+                    </div>
+                    <p id="transcriptText" class="card-body"></p>
+                </div>
+
+                <!-- Loading -->
+                <div id="loadingCard" class="result-card loading-card hidden">
+                    <div class="loader">
+                        <div class="loader-dot"></div>
+                        <div class="loader-dot"></div>
+                        <div class="loader-dot"></div>
+                    </div>
+                    <p>Searching and generating answer...</p>
+                </div>
+
+                <!-- Answer -->
+                <div id="answerCard" class="result-card answer-card hidden">
+                    <div class="card-header">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <h3>Answer</h3>
+                        <span id="groundedBadge" class="grounded-badge">✓ Grounded</span>
+                    </div>
+                    <div id="answerText" class="card-body answer-body"></div>
+                </div>
+
+                <!-- Guardrail flags -->
+                <div id="guardrailCard" class="result-card guardrail-card hidden">
+                    <div class="card-header warning">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <h3>Guardrail Flags</h3>
+                    </div>
+                    <ul id="guardrailList" class="card-body"></ul>
+                </div>
+
+                <!-- Sources -->
+                <div id="sourcesCard" class="result-card sources-card hidden">
+                    <div class="card-header">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <h3>Source Passages</h3>
+                    </div>
+                    <div id="sourcesList" class="sources-list"></div>
+                </div>
+
+                <!-- Latency -->
+                <div id="latencyCard" class="result-card latency-card hidden">
+                    <div class="card-header">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <h3>Latency Breakdown</h3>
+                    </div>
+                    <div id="latencyBars" class="latency-bars"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Built for HH Goa 2026 • Powered by Sarvam AI STT + MSMARCO-XI + Gemini</p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

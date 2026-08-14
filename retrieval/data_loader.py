@@ -1,0 +1,310 @@
+"""Fast dataset loader for ai4bharat/MSMARCO-XI using streaming mode.
+
+Uses streaming to avoid downloading full multi-GB parquet files.
+Streams only the rows needed for our sample size.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+from dataclasses import dataclass, field, asdict
+
+from tqdm import tqdm
+
+# Fix Windows console encoding
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+
+@dataclass
+class Passage:
+    """A single passage from the MSMARCO-XI dataset."""
+    passage_id: str
+    text: str
+    language: str
+    source_lang: str
+    target_lang: str
+    query_id: str
+    is_selected: bool
+
+
+@dataclass
+class EvalPair:
+    """A query-answer pair for retrieval evaluation."""
+    query_id: str
+    query: str
+    answers: list[str]
+    language: str
+    relevant_passage_ids: list[str]
+
+
+@dataclass
+class DatasetSplit:
+    """Container for loaded and split dataset."""
+    passages: list[Passage] = field(default_factory=list)
+    eval_pairs: list[EvalPair] = field(default_factory=list)
+
+
+def _make_passage_id(language: str, query_idx: int, passage_idx: int) -> str:
+    return f"{language}_{query_idx}_{passage_idx}"
+
+
+def _make_query_id(language: str, query_idx: int) -> str:
+    return f"{language}_q{query_idx}"
+
+
+# Parquet file prefix mapping
+_LANG_TO_PREFIX = {
+    "hi": "hin", "ta": "tam", "bn": "ben", "te": "tel",
+    "mr": "mar", "gu": "guj", "kn": "kan", "ml": "mal",
+    "pa": "pan", "or": "ori", "as": "asm", "ur": "urd",
+    "ne": "nep", "sa": "san",
+}
+
+
+def _stream_examples(lang: str, sample_size: int, split: str = "train"):
+    """Stream examples from a language split without downloading the full file.
+
+    Tries multiple approaches:
+    1. Streaming from parquet URL
+    2. Streaming with the dataset config name
+    3. Loading validation split (smaller)
+    """
+    from datasets import load_dataset
+
+    prefix = _LANG_TO_PREFIX.get(lang)
+    if not prefix:
+        raise ValueError(f"Unknown language '{lang}'. Available: {list(_LANG_TO_PREFIX.keys())}")
+
+    # Approach 1: Stream from the parquet URL
+    split_name = f"{prefix}{split}" if split == "train" else f"{prefix}val"
+    parquet_url = f"https://huggingface.co/datasets/ai4bharat/MSMARCO-XI/resolve/main/{split}/{split_name}.parquet"
+
+    approaches = [
+        ("parquet_stream", lambda: load_dataset("parquet", data_files=parquet_url, split="train", streaming=True)),
+        ("config_stream", lambda: load_dataset("ai4bharat/MSMARCO-XI", lang, split=split, streaming=True, trust_remote_code=True)),
+        ("val_parquet", lambda: load_dataset("parquet", data_files=f"https://huggingface.co/datasets/ai4bharat/MSMARCO-XI/resolve/main/validation/{prefix}val.parquet", split="train", streaming=True)),
+    ]
+
+    for name, loader in approaches:
+        try:
+            print(f"    Trying {name}...")
+            ds = loader()
+            
+            # Use datasets.take(N) to pull only the bounded subset as requested
+            examples = list(ds.take(sample_size))
+            
+            if examples:
+                print(f"    [OK] {name}: got {len(examples)} examples")
+                return examples
+        except Exception as e:
+            print(f"    [WARN] {name} failed: {str(e)[:100]}")
+            continue
+
+    return []
+
+
+def _process_example(example: dict, lang: str, idx: int, extract_english: bool = False):
+    """Process a single dataset example into Passages and EvalPairs."""
+    passages = []
+    eval_pair = None
+    en_passages = []
+    en_eval_pair = None
+
+    query_id = _make_query_id(lang, idx)
+    query_text = str(example.get("query", "") or "").strip()
+    answer_text = str(example.get("Answer", "") or "").strip()
+    eng_query = str(example.get("Eng_Query", "") or "").strip()
+    eng_answer = str(example.get("Eng_Answer", "") or "").strip()
+    source_lang = str(example.get("source_lang", "eng_Latn") or "eng_Latn")
+    target_lang = str(example.get("target_lang", lang) or lang)
+
+    passages_data = example.get("passages", {}) or {}
+
+    if isinstance(passages_data, dict):
+        translated = passages_data.get("Translated_passages", []) or []
+        english = passages_data.get("English_passages", []) or []
+        is_selected = passages_data.get("is_selected", []) or []
+    else:
+        translated = []
+        english = []
+        is_selected = []
+
+    # Process translated (Indic) passages
+    relevant_pids = []
+    for p_idx, p_text in enumerate(translated):
+        if not p_text or not str(p_text).strip():
+            continue
+        pid = _make_passage_id(lang, idx, p_idx)
+        is_sel = bool(is_selected[p_idx]) if p_idx < len(is_selected) else False
+        passages.append(Passage(
+            passage_id=pid, text=str(p_text).strip(), language=lang,
+            source_lang=source_lang, target_lang=target_lang,
+            query_id=query_id, is_selected=is_sel,
+        ))
+        if is_sel:
+            relevant_pids.append(pid)
+
+    if query_text and answer_text:
+        eval_pair = EvalPair(
+            query_id=query_id, query=query_text,
+            answers=[answer_text], language=lang,
+            relevant_passage_ids=relevant_pids,
+        )
+
+    # Process English passages
+    if extract_english and english:
+        en_query_id = _make_query_id("en", idx)
+        en_relevant_pids = []
+        for p_idx, p_text in enumerate(english):
+            if not p_text or not str(p_text).strip():
+                continue
+            en_pid = _make_passage_id("en", idx, p_idx)
+            is_sel = bool(is_selected[p_idx]) if p_idx < len(is_selected) else False
+            en_passages.append(Passage(
+                passage_id=en_pid, text=str(p_text).strip(), language="en",
+                source_lang="eng_Latn", target_lang="eng_Latn",
+                query_id=en_query_id, is_selected=is_sel,
+            ))
+            if is_sel:
+                en_relevant_pids.append(en_pid)
+
+        if eng_query and eng_answer:
+            en_eval_pair = EvalPair(
+                query_id=en_query_id, query=eng_query,
+                answers=[eng_answer], language="en",
+                relevant_passage_ids=en_relevant_pids,
+            )
+
+    return passages, eval_pair, en_passages, en_eval_pair
+
+
+def load_msmarco_xi(
+    languages: list[str],
+    sample_size: int = 10000,
+    cache_dir: str = "data/raw",
+) -> DatasetSplit:
+    """Load MSMARCO-XI dataset for specified languages via streaming.
+
+    'en' is not a standalone config. English data is embedded in every
+    Indic language config. When 'en' is requested, we extract English
+    data from the Hindi split.
+
+    Args:
+        languages: List of language codes (e.g., ["en", "hi", "ta"]).
+        sample_size: Max number of examples per language to load.
+        cache_dir: Directory for caching (not heavily used in streaming mode).
+
+    Returns:
+        DatasetSplit with passages for indexing and eval pairs for benchmarking.
+    """
+    result = DatasetSplit()
+    os.makedirs(cache_dir, exist_ok=True)
+
+    load_english = "en" in languages
+    indic_languages = [l for l in languages if l != "en"]
+
+    english_source_lang = None
+    if load_english:
+        if "hi" in indic_languages:
+            english_source_lang = "hi"
+        elif indic_languages:
+            english_source_lang = indic_languages[0]
+        else:
+            english_source_lang = "hi"
+            indic_languages.append("hi")
+
+    all_langs_to_load = list(set(indic_languages))
+
+    for lang in all_langs_to_load:
+        print(f"\n{'='*60}")
+        print(f"Loading MSMARCO-XI [{lang}] (up to {sample_size} examples)...")
+        print(f"{'='*60}")
+
+        examples = _stream_examples(lang, sample_size)
+        if not examples:
+            print(f"  [WARN] No data loaded for '{lang}', skipping.")
+            continue
+
+        print(f"  Processing {len(examples)} examples...")
+
+        passage_count = 0
+        eval_count = 0
+        en_passage_count = 0
+        en_eval_count = 0
+        extract_en = (load_english and lang == english_source_lang)
+
+        for idx, example in enumerate(tqdm(examples, desc=f"  [{lang}]")):
+            passages, eval_pair, en_passages, en_eval_pair = _process_example(
+                example, lang, idx, extract_english=extract_en
+            )
+            result.passages.extend(passages)
+            passage_count += len(passages)
+            if eval_pair:
+                result.eval_pairs.append(eval_pair)
+                eval_count += 1
+            if en_passages:
+                result.passages.extend(en_passages)
+                en_passage_count += len(en_passages)
+            if en_eval_pair:
+                result.eval_pairs.append(en_eval_pair)
+                en_eval_count += 1
+
+        print(f"  [OK] {lang}: {passage_count} passages, {eval_count} eval pairs")
+        if extract_en:
+            print(f"  [OK] en (from {lang}): {en_passage_count} passages, {en_eval_count} eval pairs")
+
+    print(f"\n{'='*60}")
+    print(f"Total: {len(result.passages)} passages, {len(result.eval_pairs)} eval pairs")
+    lang_dist = {}
+    for p in result.passages:
+        lang_dist[p.language] = lang_dist.get(p.language, 0) + 1
+    print(f"Language distribution: {lang_dist}")
+    print(f"{'='*60}\n")
+
+    return result
+
+
+def save_dataset_split(split: DatasetSplit, output_dir: str = "data/processed") -> None:
+    """Save processed dataset split to disk as JSON lines."""
+    os.makedirs(output_dir, exist_ok=True)
+
+    passages_path = os.path.join(output_dir, "passages.jsonl")
+    with open(passages_path, "w", encoding="utf-8") as f:
+        for p in split.passages:
+            f.write(json.dumps(asdict(p), ensure_ascii=False) + "\n")
+    print(f"Saved {len(split.passages)} passages to {passages_path}")
+
+    eval_path = os.path.join(output_dir, "eval_pairs.jsonl")
+    with open(eval_path, "w", encoding="utf-8") as f:
+        for ep in split.eval_pairs:
+            f.write(json.dumps(asdict(ep), ensure_ascii=False) + "\n")
+    print(f"Saved {len(split.eval_pairs)} eval pairs to {eval_path}")
+
+
+def load_dataset_split(input_dir: str = "data/processed") -> DatasetSplit:
+    """Load previously saved dataset split from disk."""
+    result = DatasetSplit()
+
+    passages_path = os.path.join(input_dir, "passages.jsonl")
+    if os.path.exists(passages_path):
+        with open(passages_path, "r", encoding="utf-8") as f:
+            for line in f:
+                data = json.loads(line)
+                result.passages.append(Passage(**data))
+
+    eval_path = os.path.join(input_dir, "eval_pairs.jsonl")
+    if os.path.exists(eval_path):
+        with open(eval_path, "r", encoding="utf-8") as f:
+            for line in f:
+                data = json.loads(line)
+                result.eval_pairs.append(EvalPair(**data))
+
+    print(f"Loaded {len(result.passages)} passages, {len(result.eval_pairs)} eval pairs from {input_dir}")
+    return result
