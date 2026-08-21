@@ -49,6 +49,7 @@ class RetrievalResponse(BaseModel):
 class GenerationResponse(BaseModel):
     """Output of the LLM generation stage."""
     answer: str
+    source: str = "generated"
     cited_chunk_ids: list[str] = Field(default_factory=list)
     latency_ms: float = 0.0
 
@@ -75,6 +76,7 @@ class PipelineResponse(BaseModel):
     transcript: str | None = None
     detected_language: str = "en"
     answer: str = ""
+    source: str = "generated"
     cited_chunks: list[RetrievedChunk] = Field(default_factory=list)
     grounded: bool = True
     guardrail_flags: list[str] = Field(default_factory=list)

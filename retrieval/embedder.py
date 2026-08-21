@@ -19,7 +19,7 @@ from retrieval.chunking import Chunk
 class Embedder:
     """Wrapper around multilingual-e5 sentence transformer."""
 
-    def __init__(self, model_name: str = "intfloat/multilingual-e5-base", device: str | None = None):
+    def __init__(self, model_name: str = "intfloat/multilingual-e5-small", device: str | None = None):
         """Initialize the embedding model.
 
         Args:

@@ -10,15 +10,16 @@ sarvamai==0.1.1
 
 # Embeddings & ML
 sentence-transformers==4.1.0
-faiss-cpu==1.11.0
+faiss-cpu==1.11.0 # Kept for benchmark scripts if needed, but Chroma is primary vector DB
+chromadb==0.5.23
 torch>=2.0.0
-transformers==4.52.4
+transformers
 
 # Dataset
 datasets==3.6.0
 
-# LLM - Google Gemini
-google-genai==1.16.1
+# LLM - Groq
+groq==0.15.0
 
 # Retrieval
 rank-bm25==0.2.2

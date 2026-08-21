@@ -1,0 +1,56 @@
+{
+  "source_lang": "eng_Latn",
+  "target_lang": "hin_Deva",
+  "meta": {
+    "frequency_penalty": 0,
+    "max_tokens": 4096,
+    "model_name": "ckpt-3epochs-sft-then-400k-kd",
+    "presence_penalty": 0,
+    "temperature": 0,
+    "top_p": 1
+  },
+  "Answer": "स्नोडेन 2013 में रिलीज़ हुई थी।",
+  "query_id": 1006094,
+  "query_type": "NUMERIC",
+  "passages": {
+    "English_passages": [
+      "Edward Snowden and the NSA files – timeline. What has happened to NSA whistleblower who leaked files to Guardian since he decided to reveal his identity to the world and began his asylum battle. This article is 4 years old. Wednesday 21 August 2013 17.54 EDT First published on Wednesday 21 August 2013 17.54 EDT.",
+      "Everything We Learned From Edward Snowden in 2013. Leaks from the fugitive former NSA contractor told us a lot about the scope of America’s Internet and phone surveillance powers. We could learn even more in 2014. The U.S. and Britain spied on OPEC, according to documents released by Edward Snowden.",
+      "Thanks to the revelations of the 1970s, including a Snowden-style break-in by antiwar activists at an FBI office in Media, Pennsylvania, in 1971, that opened a window into the Bureau’s acts of illegality, some now-famous reporting, and the thorough work of the Church Committee in the Senate, we have a sense of the enormity of what the US national security state was capable of once enveloped in a penumbra of secrecy (even if, in that era, the accompanying technology could do so much less).",
+      "In June 2013, The Guardian reported the first leak based on top-secret documents that then 29-year-old Edward Snowden stole from the National Security Agency. At the time, Snowden worked as an intelligence contractor for Booz Allen Hamilton in Hawaii. That leak would certainly not be the last. In the years since, journalists have released more than 7,000 top-secret documents that Snowden entrusted them with, which some believe is less than 1% of the entire archive. Now, with the film Snowden premiering Friday, it's worth taking a look back at what secrets Snowden actually revealed. We've compiled every single leak that came out in the first year of the Snowden saga, though there were many more that came later.",
+      "Frequently asked questions. Who is Edward Snowden and what did he do? Why is this information important? What impact have Snowden’s revelations had? Why doesn't Edward Snowden release all the documents at once? Why does the US want Edward Snowden extradited? What are the current charges on the US indictment for Edward Snowden?",
+      "Snowden DVD and Blu-ray release date was set for December 27, 2016 and available on Digital HD from Amazon Video and iTunes on December 13, 2016.",
+      "Then, the NSA did not note the email it published online today. Late today, The Washington Post reported that Snowden sent the paper an email saying the NSA's release was incomplete and did not include correspondence with NSA compliance officials and concerns he had raised about indefensible collection activities..",
+      "With that simple message, sent in December 2012 from former NSA contractor Edward Snowden to Guardian reporter Glenn Greenwald, the biggest leak of government secrets in history was set in motion. Greenwald paid little attention at first.",
+      "Edward Snowden What Did He Really Reveal? added by Cynthia Collins on January 6, 2014 View all posts by Cynthia Collins → 13 Responses to Edward Snowden What Did He Really Reveal? noneofyourbusiness July 6, 2016 at 4:17 pm",
+      "Paul released a video on his website saying, Edward Snowden sacrificed his livelihood, citizenship, and freedom by exposing the disturbing scope of the NSA's worldwide spying program. Thanks to one man's courageous actions, Americans know about the truly egregious ways their government is spying on them."
+    ],
+    "Translated_passages": [
+      "एडवर्ड स्नोडेन और एन.एस.ए. फाइलें - समयरेखा। एन.एस.ए. व्हिसलब्लोअर के साथ क्या हुआ है जिसने अपनी पहचान दुनिया के सामने प्रकट करने और अपनी शरण की लड़ाई शुरू करने के बाद से गार्जियन को फाइलें लीक कर दी थीं। यह लेख 4 साल पुराना है। बुधवार 21 अगस्त 2013 17.54 ई.डी.टी. पहली बार बुधवार 21 अगस्त 2013 17.54 ई.डी.टी. पर प्रकाशित हुआ था।",
+      "2013 में हमने एडवर्ड स्नोडेन से जो कुछ भी सीखा, वह हमें अमेरिका की इंटरनेट और फोन निगरानी शक्तियों के दायरे के बारे में बहुत कुछ बताता है। 2014 में हम और भी बहुत कुछ सीख सकते थे। एडवर्ड स्नोडेन द्वारा जारी किए गए दस्तावेजों के अनुसार, अमेरिका और ब्रिटेन ने ओपेक की जासूसी की।",
+      "1970 के दशक के रहस्योद्घाटन के लिए धन्यवाद, जिसमें 1971 में मीडिया, पेंसिल्वेनिया में एक एफ.बी.आई. कार्यालय में युद्ध विरोधी कार्यकर्ताओं द्वारा स्नोडेन-शैली का तोड़फोड़ शामिल है, जिसने ब्यूरो के अवैधता के कार्यों में एक खिड़की खोल दी, कुछ अब प्रसिद्ध रिपोर्टिंग, और सीनेट में चर्च समिति का पूरा काम, हमें इस बात का एहसास हुआ कि अमेरिकी राष्ट्रीय सुरक्षा राज्य एक समय में गोपनीयता के छायांकन में लिपटा हुआ था (भले ही उस युग में, साथ देने वाली तकनीक बहुत कम कर सकती थी)।",
+      "जून 2013 में, द गार्जियन ने शीर्ष-गुप्त दस्तावेजों के आधार पर पहली रिपोर्ट की थी कि 29 वर्षीय एडवर्ड स्नोडेन ने राष्ट्रीय सुरक्षा एजेंसी से चोरी की थी। उस समय, स्नोडेन हवाई में बूज़ एलन हैमिल्टन के लिए एक खुफिया ठेकेदार के रूप में काम करते थे। वह रिपोर्ट निश्चित रूप से आखिरी नहीं होगी। तब से, पत्रकारों ने स्नोडेन द्वारा उन्हें सौंपे गए 7,000 से अधिक शीर्ष-गुप्त दस्तावेज जारी किए हैं, जिन्हें कुछ लोग पूरे अभिलेखागार के 1% से भी कम मानते हैं। अब, शुक्रवार को स्नोडेन की फिल्म के प्रीमियर के साथ, यह देखना उचित होगा कि स्नोडेन ने वास्तव में कौन से रहस्यों को उजागर किया। हमने स्नोडेन सागा के पहले वर्ष में सामने आने वाली हर एक रिपोर्ट को संकलित किया है, हालांकि बाद में और भी कई रिपोर्टें सामने आईं।",
+      "अक्सर पूछे जाने वाले प्रश्न। एडवर्ड स्नोडेन कौन हैं और उन्होंने क्या किया? यह जानकारी क्यों महत्वपूर्ण है? स्नोडेन के खुलासे का क्या प्रभाव पड़ा है? एडवर्ड स्नोडेन एक बार में सभी दस्तावेज़ क्यों नहीं जारी करते? अमेरिका एडवर्ड स्नोडेन को प्रत्यर्पित क्यों चाहता है? एडवर्ड स्नोडेन पर अमेरिकी अभियोग पर वर्तमान आरोप क्या हैं?",
+      "स्नोडेन डी.वी.डी. और ब्लू-रे रिलीज की तारीख 27 दिसंबर, 2016 निर्धारित की गई थी और डिजिटल एच.डी. पर 13 दिसंबर, 2016 को अमेज़ॅन वीडियो और आईट्यून्स पर उपलब्ध होगी।",
+      "फिर, एन.एस.ए. ने आज ऑनलाइन प्रकाशित ईमेल पर ध्यान नहीं दिया। द वाशिंगटन पोस्ट ने आज देर से बताया कि स्नोडेन ने अखबार को एक ईमेल भेजा जिसमें कहा गया था कि एन.एस.ए. का विज्ञप्ति अधूरा था और इसमें एन.एस.ए. अनुपालन अधिकारियों के साथ पत्राचार और अक्षम्य संग्रह गतिविधियों के बारे में उनकी चिंताएँ शामिल नहीं थीं।",
+      "दिसंबर 2012 में पूर्व एन.एस.ए. ठेकेदार एडवर्ड स्नोडेन द्वारा गार्जियन रिपोर्टर ग्लेन ग्रीनवाल्ड को भेजे गए उस सरल संदेश के साथ, इतिहास में सरकारी रहस्यों का सबसे बड़ा रहस्योद्घाटन हुआ। ग्रीनवाल्ड ने शुरू में बहुत कम ध्यान दिया।",
+      "एडवर्ड स्नोडेन व्हाट डिड हे रियली रिवील? 6 जनवरी, 2014 को सिंथिया कॉलिन्स द्वारा जोड़ा गया, सिंथिया कॉलिन्स द्वारा सभी पोस्ट देखें → एडवर्ड स्नोडेन व्हाट डिड हे रियली रिवील? 6 जुलाई, 2016 को शाम 4:17 बजे",
+      "पॉल ने अपनी वेबसाइट पर यह कहते हुए एक वीडियो जारी किया कि एडवर्ड स्नोडेन ने एन.एस.ए. के विश्वव्यापी जासूसी कार्यक्रम के परेशान करने वाले दायरे को उजागर करके अपनी आजीविका, नागरिकता और स्वतंत्रता का बलिदान दिया। एक आदमी के साहसी कार्यों के कारण, अमेरिकियों को पता है कि उनकी सरकार वास्तव में उनकी जासूसी कैसे कर रही है।"
+    ],
+    "is_selected": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "Eng_Query": "when did snowden release",
+  "Eng_Answer": "Snowden released in the year of 2013.",
+  "query": "जब स्नोडेन ने रिलीज़ किया था"
+}

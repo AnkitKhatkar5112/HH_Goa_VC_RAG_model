@@ -252,10 +252,10 @@ class ParentDocumentChunker(Chunker):
 # ─────────────────────────────────────────────────────────────────────────────
 
 class MetadataAwareChunker(Chunker):
-    """Same as fixed-size, but enriches chunks with language metadata.
+    """Combines query text and passage text into a single tightly-scoped chunk.
 
-    Chunks are tagged with language info, enabling language-filtered
-    retrieval at query time.
+    Tags chunks with query_type, is_selected, and language metadata, enabling
+    metadata-filtered retrieval at query time.
     """
 
     strategy_name = "metadata_aware"
@@ -267,19 +267,29 @@ class MetadataAwareChunker(Chunker):
     def chunk(self, passages: list[Passage]) -> tuple[list[Chunk], None]:
         chunks = []
         for passage in passages:
-            words = passage.text.split()
+            if not passage.is_selected:
+                continue
+            
+            # Bundle query text and passage text
+            combined_text = f"Query: {passage.query_text}\nPassage: {passage.text}"
+            words = combined_text.split()
+            
+            metadata = {
+                "source_lang": passage.source_lang,
+                "target_lang": passage.target_lang,
+                "language": passage.language,
+                "is_selected": passage.is_selected,
+                "query_id": passage.query_id,
+            }
+
             if len(words) <= self.chunk_size:
                 chunks.append(Chunk(
                     chunk_id=f"{passage.passage_id}_ma0",
-                    text=passage.text,
+                    text=combined_text,
                     language=passage.language,
                     passage_id=passage.passage_id,
                     strategy=self.strategy_name,
-                    metadata={
-                        "source_lang": passage.source_lang,
-                        "target_lang": passage.target_lang,
-                        "language": passage.language,
-                    },
+                    metadata=metadata,
                 ))
             else:
                 start = 0
@@ -293,11 +303,7 @@ class MetadataAwareChunker(Chunker):
                         language=passage.language,
                         passage_id=passage.passage_id,
                         strategy=self.strategy_name,
-                        metadata={
-                            "source_lang": passage.source_lang,
-                            "target_lang": passage.target_lang,
-                            "language": passage.language,
-                        },
+                        metadata=metadata,
                     ))
                     ci += 1
                     start = end - self.overlap

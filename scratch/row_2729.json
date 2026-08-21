@@ -1,0 +1,56 @@
+{
+  "source_lang": "eng_Latn",
+  "target_lang": "hin_Deva",
+  "meta": {
+    "frequency_penalty": 0,
+    "max_tokens": 4096,
+    "model_name": "ckpt-3epochs-sft-then-400k-kd",
+    "presence_penalty": 0,
+    "temperature": 0,
+    "top_p": 1
+  },
+  "Answer": "कोई उत्तर नहीं मिला।",
+  "query_id": 1102430,
+  "query_type": "DESCRIPTION",
+  "passages": {
+    "English_passages": [
+      "J. Robert Oppenheimer In 1954, after he had worked on developing the atomic bomb, he was investigated and denied future access to classified information because he had friends and family who belonged to the Communist Party.",
+      "In fact, in Richard Rhodes' Dark Sun: The Making of the Hydrogen Bomb, I believe there is a quote where he indicates that the Hydrogen Bomb is not useful against cities as the targets are too small. Both Einstein and Oppenheimer were in obvious favor of developing the atom bomb during WWII.",
+      "In December 1941, the government launched the Manhattan Project, the scientific and military undertaking to develop the bomb. A Letter to the President. In August 1939, Einstein wrote to U.S. President Franklin Roosevelt to warn him that the Nazis were working on a new and powerful weapon: an atomic bomb. Fellow physicist Leo Szilard urged Einstein to send the letter and helped him draft it. Einstein: A Security Risk",
+      "J. Robert Oppenheimer is often called the father of the atomic bomb for leading the Manhattan Project, the program that developed the first nuclear weapon during World War II. Synopsis Born in New York City in 1904, physicist J. Robert Oppenheimer served as director of the Los Alamos Laboratory during the development of the atomic bomb. After the 1939 invasion of Poland by Nazi Germany, Oppenheimer was selected to administer a laboratory to carry out the Manhattan Project, the program that developed the first nuclear weapon during World War II.",
+      "In January 1950 President Truman announced that the USA was beginning an all-out effort to develop a hydrogen bomb. Einstein took part in a television programme about the implications. 'The belief that it's possible to achieve security through armaments on a national scale is a disastrous illusion.",
+      "Oppenheimer's critics have accused him of equivocating between 1949, when he opposed the development of the hydrogen bomb, and 1951, when he supported it. Some have made this a case for reinforcing their opinions about his moral inconsistency.",
+      "Einstein backed Oppenheimer and opposed the development of the hydrogen bomb, instead calling for international controls on the spread of nuclear technology. Einstein also was increasingly drawn to antiwar activities and to advancing the civil rights of African Americans.",
+      "He thought it was immoral to use it. Quotes from Einstein about the bomb: We must not condemn man because his inventiveness and patient conquest of the forces of nature are exploited for false and destructive purposes. The line of demarcation doesn't lie between scientists and non-scientists; it lies between responsible, honest people, and the others.",
+      "First atomic bomb dropped on Hiroshima, Japan Woe is me.—Albert Einstein, upon hearing the news of the Hiroshima bombing. The Bombing of Japan. On August 9, 1945, the United States dropped an atomic bomb on the city of Nagasaki, Japan, three days after bombing Hiroshima. By the end of 1945, an estimated 200,000 people had died in the two cities.",
+      "1 billion dollar program to produce more scientists and teachers of science National aeronautics and space administration (nasa) Congress created this to coordinated the space related efforts of American scientists and the military Red scare Reaction of the fear of communists outside and inside America working to destroy American life"
+    ],
+    "Translated_passages": [
+      "जे. रॉबर्ट ओपेनहाइमर ने 1954 में परमाणु बम विकसित करने पर काम करने के बाद, उनकी जाँच की गई और उन्हें वर्गीकृत जानकारी तक भविष्य में पहुँच से वंचित कर दिया गया क्योंकि उनके मित्र और परिवार के सदस्य साम्यवादी पार्टी से संबंधित थे।",
+      "वास्तव में, रिचर्ड रोड्स के डार्क सन: द मेकिंग ऑफ द हाइड्रोजन बॉम्ब में, मेरा मानना है कि एक उद्धरण है जहां वह संकेत देते हैं कि हाइड्रोजन बम शहरों के खिलाफ उपयोगी नहीं है क्योंकि लक्ष्य बहुत छोटे हैं। दोनों आइंस्टीन और ओपेनहाइमर द्वितीय विश्व युद्ध के दौरान परमाणु बम विकसित करने के पक्ष में थे।",
+      "दिसंबर 1941 में, सरकार ने मैनहट्टन परियोजना शुरू की, जो बम विकसित करने के लिए एक वैज्ञानिक और सैन्य उपक्रम था। अगस्त 1939 में, आइंस्टीन ने अमेरिकी राष्ट्रपति फ्रैंकलिन रूजवेल्ट को एक पत्र लिखकर उन्हें चेतावनी दी कि नाजी एक नए और शक्तिशाली हथियार पर काम कर रहे थे: एक परमाणु बम। साथी भौतिक विज्ञानी लियो स्जिलार्ड ने आइंस्टीन से पत्र भेजने का आग्रह किया और इसका मसौदा तैयार करने में उनकी मदद की।",
+      "जे. रॉबर्ट ओपेनहाइमर को अक्सर परमाणु बम का जनक कहा जाता है क्योंकि उन्होंने मैनहट्टन परियोजना का नेतृत्व किया, जो कार्यक्रम द्वितीय विश्व युद्ध के दौरान पहला परमाणु हथियार विकसित करने वाला था। 1904 में न्यूयॉर्क शहर में जन्मे भौतिक विज्ञानी जे. रॉबर्ट ओपेनहाइमर को परमाणु बम के विकास के दौरान लॉस अलामोस प्रयोगशाला के निदेशक के रूप में कार्य करने के लिए चुना गया था। 1939 में नाजी जर्मनी द्वारा पोलैंड पर आक्रमण के बाद, ओपेनहाइमर को मैनहट्टन परियोजना को पूरा करने के लिए एक प्रयोगशाला चलाने के लिए चुना गया था, जो कार्यक्रम द्वितीय विश्व युद्ध के दौरान पहला परमाणु हथियार विकसित करने वाला था।",
+      "जनवरी 1950 में राष्ट्रपति ट्रूमैन ने घोषणा की कि संयुक्त राज्य अमेरिका हाइड्रोजन बम विकसित करने के लिए पूर्ण प्रयास शुरू कर रहा है। आइंस्टीन ने इसके निहितार्थों के बारे में एक टेलीविजन कार्यक्रम में भाग लिया। 'राष्ट्रीय स्तर पर हथियारों के माध्यम से सुरक्षा प्राप्त करना संभव है, यह विश्वास एक विनाशकारी भ्रम है।",
+      "ओपेनहाइमर के आलोचकों ने उन पर 1949 में हाइड्रोजन बम के विकास का विरोध करने और 1951 में इसे समर्थन देने के बीच दुविधा पैदा करने का आरोप लगाया है। कुछ लोगों ने उनकी नैतिक असंगति के बारे में अपनी राय को मजबूत करने के लिए इसे एक मामला बना दिया है।",
+      "आइंस्टीन ने ओपेनहाइमर का समर्थन किया और हाइड्रोजन बम के विकास का विरोध किया, इसके बजाय परमाणु प्रौद्योगिकी के प्रसार पर अंतर्राष्ट्रीय नियंत्रण का आह्वान किया। आइंस्टीन को युद्ध विरोधी गतिविधियों और अफ्रीकी अमेरिकियों के नागरिक अधिकारों को आगे बढ़ाने के लिए भी तेजी से आकर्षित किया गया था।",
+      "उन्होंने सोचा कि इसका उपयोग करना अनैतिक है। आइंस्टीन के बम के बारे में उद्धरण: हमें आदमी की निंदा नहीं करनी चाहिए क्योंकि उनकी नवाचार और प्रकृति की शक्तियों पर धैर्यपूर्वक विजय का दुरुपयोग झूठे और विनाशकारी उद्देश्यों के लिए किया जाता है। सीमांकन की रेखा वैज्ञानिकों और गैर-वैज्ञानिकों के बीच नहीं है; यह जिम्मेदार, ईमानदार लोगों और अन्य लोगों के बीच है।",
+      "हिरोशिमा, जापान में पहला परमाणु बम गिराया गया, यह मेरे लिए दुख की बात है। अल्बर्ट आइंस्टीन ने हिरोशिमा बमबारी की खबर सुनकर यह कहा। 9 अगस्त, 1945 को, संयुक्त राज्य अमेरिका ने हिरोशिमा बमबारी के तीन दिन बाद जापान के नागासाकी शहर पर एक परमाणु बम गिराया। 1945 के अंत तक, दोनों शहरों में अनुमानित 200,000 लोग मारे गए थे।",
+      "एक अरब डॉलर के कार्यक्रम के माध्यम से अधिक वैज्ञानिकों और शिक्षकों को विज्ञान के लिए राष्ट्रीय वैमानिकी और अंतरिक्ष प्रशासन (नासा) कांग्रेस ने अमेरिकी वैज्ञानिकों के अंतरिक्ष संबंधी प्रयासों को समन्वयित करने के लिए बनाया है, और साथ ही अमेरिकी जीवन को नष्ट करने के लिए बाहर और अंदर से कम्युनिस्टों के डर की रेड स्केयर रिएक्शन को रोकने के लिए काम कर रहे हैं।"
+    ],
+    "is_selected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "Eng_Query": "why did scientists albert einstein and j. robert oppenheimer oppose development of a hydrogen bomb?",
+  "Eng_Answer": "No Answer Present.",
+  "query": "वैज्ञानिकों अल्बर्ट आइनस्टीन और जे. रॉबर्ट ऑपेनहाइमर ने हाइड्रोजन बम के विकास का विरोध क्यों किया?"
+}

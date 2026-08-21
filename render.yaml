@@ -10,11 +10,11 @@ services:
         value: "3.11.0"
       - key: SARVAM_API_KEY
         sync: false
-      - key: GOOGLE_API_KEY
+      - key: GROQ_API_KEY
         sync: false
       - key: APP_ENV
         value: production
-      - key: FAISS_INDEX_PATH
-        value: data/faiss_index
+      - key: CHROMA_DB_DIR
+        value: /data/chroma_db
       - key: EMBEDDING_MODEL
-        value: intfloat/multilingual-e5-base
+        value: intfloat/multilingual-e5-small

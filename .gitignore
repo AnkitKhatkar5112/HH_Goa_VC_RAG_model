@@ -36,3 +36,10 @@ Thumbs.db
 # Logs
 *.log
 logs/
+build_err.log
+build_mem.log
+build_out.log
+
+# Temporary and Cache
+temp_cache/
+scratch/

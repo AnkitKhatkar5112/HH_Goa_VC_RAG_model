@@ -1,0 +1,56 @@
+{
+  "source_lang": "eng_Latn",
+  "target_lang": "hin_Deva",
+  "meta": {
+    "frequency_penalty": 0,
+    "max_tokens": 4096,
+    "model_name": "ckpt-3epochs-sft-then-400k-kd",
+    "presence_penalty": 0,
+    "temperature": 0,
+    "top_p": 1
+  },
+  "Answer": "निगम एक कंपनी या लोगों का समूह होता है जो एक एकल इकाई के रूप में कार्य करने के लिए अधिकृत होता है और कानून में इस प्रकार से मान्यता प्राप्त होती है।",
+  "query_id": 1102432,
+  "query_type": "DESCRIPTION",
+  "passages": {
+    "English_passages": [
+      "A company is incorporated in a specific nation, often within the bounds of a smaller subset of that nation, such as a state or province. The corporation is then governed by the laws of incorporation in that state. A corporation may issue stock, either private or public, or may be classified as a non-stock corporation. If stock is issued, the corporation will usually be governed by its shareholders, either directly or indirectly.",
+      "Today, there is a growing community of more than 2,100 Certified B Corps from 50 countries and over 130 industries working together toward 1 unifying goal: to redefine success in business. Join the Movement",
+      "Corporation definition, an association of individuals, created by law or under authority of law, having a continuous existence independent of the existences of its members, and powers and liabilities distinct from those of its members. See more.",
+      "Examples of corporation in a Sentence. 1  He works as a consultant for several large corporations. 2  a substantial corporation that showed that he was a sucker for all-you-can-eat buffets.",
+      "1: a government-owned corporation (as a utility or railroad) engaged in a profit-making enterprise that may require the exercise of powers unique to government (as eminent domain) — called also government corporation, publicly held corporation",
+      "McDonald's Corporation is one of the most recognizable corporations in the world. A corporation is a company or group of people authorized to act as a single entity (legally a person) and recognized as such in law. Early incorporated entities were established by charter (i.e. by an ad hoc act granted by a monarch or passed by a parliament or legislature).",
+      "Corporations are owned by their stockholders (shareholders) who share in profits and losses generated through the firm's operations, and have three distinct characteristics (1) Legal existence: a firm can (like a person) buy, sell, own, enter into a contract, and sue other persons and firms, and be sued by them.",
+      "An Association is an organized group of people who share in a common interest, activity, or purpose. 1  Start a business Plan your business. Create your business structure Types of business structures. 2  Change or update your business Add a new location to your existing business. Add an endorsement to your existing business.",
+      "B Corp certification shines a light on the companies leading the global movement...",
+      "LLCs offer greater flexibility when it comes to income taxes. 1  The owner or member of an LLC can have their income taxed in three ways: 2  A single owner LLC is treated as a Schedule C (sole proprietor) for tax purposes."
+    ],
+    "Translated_passages": [
+      "एक कंपनी एक विशिष्ट देश में निगमित होती है, अक्सर उस देश के एक छोटे उपसमूह, जैसे कि एक राज्य या प्रांत, की सीमाओं के भीतर। निगम तब उस राज्य में निगमन के कानूनों द्वारा शासित होता है। एक निगम या तो निजी या सार्वजनिक स्टॉक जारी कर सकता है, या इसे गैर-स्टॉक निगम के रूप में वर्गीकृत किया जा सकता है। यदि स्टॉक जारी किया जाता है, तो निगम आमतौर पर अपने शेयरधारकों द्वारा सीधे या परोक्ष रूप से शासित होगा।",
+      "आज, 50 देशों से 2,100 से अधिक प्रमाणित बी कोर का एक बढ़ता हुआ समुदाय है और 130 से अधिक उद्योग एक एकीकृत लक्ष्य की दिशा में मिलकर काम कर रहे हैं: व्यवसाय में सफलता को पुनः परिभाषित करना। आंदोलन में शामिल हों",
+      "निगम की परिभाषा, व्यक्तियों का एक समूह, जो कानून द्वारा या कानून के अधिकार के तहत बनाया गया है, जिसका एक निरंतर अस्तित्व है जो इसके सदस्यों के अस्तित्व से स्वतंत्र है, और शक्तियाँ और दायित्व जो इसके सदस्यों से अलग हैं। अधिक जानकारी के लिए देखें।",
+      "वाक्य में निगम के उदाहरण। 1 वह कई बड़े निगमों के लिए सलाहकार के रूप में काम करता है। 2 एक पर्याप्त निगम जिसने दिखाया कि वह सभी संभव भोज्य-प्रेमी थे।",
+      "1: एक सरकारी स्वामित्व वाला निगम (एक उपयोगिता या रेलमार्ग के रूप में) एक लाभ कमाने वाले उद्यम में लगा हुआ है जिसके लिए सरकारी शक्तियों (एक प्रमुख क्षेत्र के रूप में) का प्रयोग करने की आवश्यकता हो सकती है - जिसे सरकारी निगम, सार्वजनिक रूप से आयोजित निगम भी कहा जाता है।",
+      "मैकडॉनल्ड कॉर्पोरेशन दुनिया के सबसे पहचानने योग्य निगमों में से एक है। एक निगम एक कंपनी या लोगों का समूह है जो एक एकल इकाई (कानूनी रूप से एक व्यक्ति) के रूप में कार्य करने के लिए अधिकृत है और कानून में इस तरह से मान्यता प्राप्त है। प्रारंभिक निगमित संस्थाएं चार्टर द्वारा स्थापित की गई थीं (अर्थात एक राजा द्वारा अनुदानित या संसद या विधायिका द्वारा पारित)।",
+      "निगमों का स्वामित्व उनके शेयरधारकों (शेयरधारकों) के पास होता है जो कंपनी के संचालन के माध्यम से उत्पन्न लाभ और नुकसान में हिस्सा लेते हैं, और उनकी तीन अलग-अलग विशेषताएँ (1) कानूनी अस्तित्व होता है: एक कंपनी (एक व्यक्ति की तरह) अन्य व्यक्तियों और कंपनियों को खरीद सकती है, बेच सकती है, स्वामित्व कर सकती है, अनुबंध में प्रवेश कर सकती है, और उन पर मुकदमा कर सकती है और उन पर मुकदमा चलाया जा सकता है।",
+      "एक एसोसिएशन उन लोगों का एक संगठित समूह है जो एक साझा रुचि, गतिविधि, या उद्देश्य साझा करते हैं। 1 व्यवसाय शुरू करें अपना व्यवसाय योजना बनाएं। व्यवसाय संरचना के प्रकार। 2 अपने व्यवसाय को बदलें या अद्यतन करें अपने मौजूदा व्यवसाय में एक नया स्थान जोड़ें। अपने मौजूदा व्यवसाय को समर्थन दें।",
+      "बी कॉर्प प्रमाणीकरण वैश्विक आंदोलन का नेतृत्व करने वाली कंपनियों पर प्रकाश डालता है।",
+      "एलएलसी आयकर के मामले में अधिक लचीलापन प्रदान करते हैं। 1 एलएलसी के मालिक या सदस्य को तीन तरीकों से आयकर दिया जा सकता है: 2 एकल मालिक एलएलसी को कर उद्देश्यों के लिए अनुसूची सी (एकल स्वामी) के रूप में माना जाता है।"
+    ],
+    "is_selected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "Eng_Query": ". what is a corporation?",
+  "Eng_Answer": "A corporation is a company or group of people authorized to act as a single entity and recognized as such in law.",
+  "query": "कॉर्पोरेशन क्या है?"
+}

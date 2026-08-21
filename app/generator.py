@@ -1,4 +1,4 @@
-"""LLM generation module using Google Gemini.
+"""LLM generation module using Groq API.
 
 Generates grounded, context-constrained answers from retrieved passages.
 Includes retry with backoff and explicit fallback on timeout.
@@ -8,11 +8,14 @@ from __future__ import annotations
 
 import asyncio
 import time
+import os
 
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 from app.schemas import GenerationResponse, RetrievedChunk
 from app.config import settings
+
+from groq import Groq
 
 
 GROUNDED_PROMPT_TEMPLATE = """You are a helpful multilingual assistant. Answer the user's question using ONLY the provided context passages below.
@@ -23,6 +26,7 @@ RULES:
 3. Always cite which passage(s) you used by their IDs (e.g., [Passage 1]).
 4. Respond in the SAME LANGUAGE as the user's question.
 5. Keep your answer concise and directly relevant.
+6. Restrict your answer to a maximum of 3 sentences or about 150 words.
 
 CONTEXT PASSAGES:
 {context}
@@ -40,10 +44,10 @@ class GeneratorService:
         self._initialized = False
 
     def _get_client(self):
-        """Lazy initialization of the Gemini client."""
+        """Lazy initialization of the Groq client."""
         if self._client is None:
-            from google import genai
-            self._client = genai.Client(api_key=settings.google_api_key)
+            api_key = settings.groq_api_key or os.environ.get("GROQ_API_KEY")
+            self._client = Groq(api_key=api_key)
             self._initialized = True
         return self._client
 
@@ -56,20 +60,44 @@ class GeneratorService:
             )
         return "\n\n".join(context_parts)
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=1, max=4),
-        retry=retry_if_exception_type((ConnectionError, TimeoutError)),
-        reraise=True,
-    )
-    def _generate_with_retry(self, prompt: str) -> str:
-        """Call the LLM with retry logic."""
+    def _generate_with_retry(self, prompt: str) -> tuple[str, int, dict]:
+        """Call the LLM with retry logic. Returns (answer, retries, headers)."""
         client = self._get_client()
-        response = client.models.generate_content(
-            model=settings.llm_model,
-            contents=prompt,
-        )
-        return response.text or ""
+        max_retries = settings.llm_max_retries
+        retries = 0
+        for attempt in range(max_retries):
+            try:
+                raw_response = client.chat.completions.with_raw_response.create(
+                    messages=[{"role": "user", "content": prompt}],
+                    model=settings.llm_model,
+                    max_tokens=600,
+                    extra_body={"reasoning_effort": "low"},
+                )
+                
+                headers = raw_response.headers
+                req_rem = headers.get('x-ratelimit-remaining-requests', 'unknown')
+                tok_rem = headers.get('x-ratelimit-remaining-tokens', 'unknown')
+                
+                print(f"[LLM Call] Attempt {attempt+1}: model={settings.llm_model}, remaining_reqs={req_rem}, remaining_tokens={tok_rem}")
+                
+                parsed = raw_response.parse()
+                msg = parsed.choices[0].message
+                reasoning = getattr(msg, "reasoning", getattr(msg, "reasoning_content", None))
+                if reasoning:
+                    print(f"[LLM Call] Captured Reasoning: {reasoning}")
+                else:
+                    print(f"[LLM Call] No reasoning captured or field empty.")
+                    
+                return msg.content or "", retries, dict(headers)
+                
+            except Exception as e:
+                retries += 1
+                print(f"[LLM Call] Attempt {attempt+1} failed: {e}")
+                if attempt == max_retries - 1:
+                    raise
+                time.sleep(2 ** attempt)  # Exponential backoff
+        
+        return "", retries, {}
 
     async def generate(
         self,
@@ -101,7 +129,7 @@ class GeneratorService:
 
         try:
             # Run LLM call in executor to not block the event loop
-            answer = await asyncio.wait_for(
+            answer, retries, headers = await asyncio.wait_for(
                 asyncio.get_event_loop().run_in_executor(
                     None, lambda: self._generate_with_retry(prompt)
                 ),
@@ -137,6 +165,7 @@ class GeneratorService:
             )
             return GenerationResponse(
                 answer=fallback_answer,
+                source="fallback",
                 cited_chunk_ids=[c.chunk_id for c in chunks[:3]],
                 latency_ms=round(elapsed_ms, 2),
             )
@@ -152,6 +181,7 @@ class GeneratorService:
             )
             return GenerationResponse(
                 answer=fallback_answer,
+                source="fallback",
                 cited_chunk_ids=[c.chunk_id for c in chunks[:3]],
                 latency_ms=round(elapsed_ms, 2),
             )

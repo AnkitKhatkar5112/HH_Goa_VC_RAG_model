@@ -1,18 +1,19 @@
-"""FAISS HNSW index for fast in-memory vector search.
+"""ChromaDB index for persistent vector search.
 
 Supports building, saving, loading, and querying the index.
-Also supports language-filtered retrieval for metadata-aware strategy.
+Also supports metadata filtering.
 """
 
 from __future__ import annotations
 
-import json
 import os
 import time
 from dataclasses import dataclass
-
-import faiss
 import numpy as np
+
+import chromadb
+from chromadb.config import Settings as ChromaSettings
+import faiss
 
 from retrieval.chunking import Chunk
 
@@ -23,164 +24,228 @@ class SearchResult:
     chunk_id: str
     score: float
     rank: int
+    text: str
+    language: str
+    passage_id: str
+    strategy_name: str
 
 
-class FAISSIndex:
-    """FAISS HNSW index manager."""
+class ChromaIndex:
+    """ChromaDB manager for multiple chunking strategy collections."""
 
     def __init__(
         self,
-        dimension: int,
-        m: int = 32,
-        ef_construction: int = 128,
-        ef_search: int = 64,
+        persist_directory: str,
+        dimension: int = 384, # e5-small dimension
     ):
-        """Initialize the FAISS HNSW index.
+        """Initialize the ChromaDB persistent client.
 
         Args:
-            dimension: Vector dimension (768 for e5-base, 1024 for e5-large).
-            m: Number of neighbors in HNSW graph.
-            ef_construction: Construction-time search depth.
-            ef_search: Query-time search depth.
+            persist_directory: Where to store the DB on disk.
+            dimension: Vector dimension.
         """
+        self.persist_directory = persist_directory
         self.dimension = dimension
-        self.m = m
-        self.ef_construction = ef_construction
-        self.ef_search = ef_search
 
-        self.index: faiss.IndexHNSWFlat | None = None
-        self.chunk_ids: list[str] = []
-        self.chunk_languages: list[str] = []
-        self._id_to_idx: dict[str, int] = {}
-        self._lang_to_indices: dict[str, list[int]] = {}
+        os.makedirs(persist_directory, exist_ok=True)
+        self.client = chromadb.PersistentClient(
+            path=persist_directory,
+            settings=ChromaSettings(anonymized_telemetry=False)
+        )
+        self.collections = {}
 
-    def build(self, embeddings: np.ndarray, chunks: list[Chunk]) -> None:
-        """Build the HNSW index from embeddings.
+    def build(self, embeddings: np.ndarray, chunks: list[Chunk], collection_name: str) -> None:
+        """Build/add to a Chroma collection from embeddings.
 
         Args:
             embeddings: Embedding matrix of shape (n, dimension).
-            chunks: Corresponding chunks (same order as embeddings).
+            chunks: Corresponding chunks.
+            collection_name: Name of the collection (usually strategy name).
         """
         assert embeddings.shape[0] == len(chunks), "Embeddings and chunks must have same length"
-        assert embeddings.shape[1] == self.dimension, f"Expected dim {self.dimension}, got {embeddings.shape[1]}"
+        
+        # We explicitly enforce 'cosine' similarity so scores are comparable across collections
+        collection = self.client.get_or_create_collection(
+            name=collection_name,
+            metadata={"hnsw:space": "cosine"}
+        )
 
-        print(f"Building FAISS HNSW index: {len(chunks)} vectors, dim={self.dimension}, M={self.m}")
+        print(f"Adding {len(chunks)} vectors to Chroma collection '{collection_name}'...")
 
-        self.index = faiss.IndexHNSWFlat(self.dimension, self.m)
-        self.index.hnsw.efConstruction = self.ef_construction
-        self.index.hnsw.efSearch = self.ef_search
-
-        # Ensure float32
-        embeddings = embeddings.astype(np.float32)
-        # Normalize for inner product = cosine similarity (embeddings should already be normalized)
-        faiss.normalize_L2(embeddings)
-
+        # Batch adding to avoid memory/grpc limits
+        batch_size = 5461 # Chroma recommended batch size
+        
         start = time.perf_counter()
-        self.index.add(embeddings)
+        
+        for i in range(0, len(chunks), batch_size):
+            end = min(i + batch_size, len(chunks))
+            batch_chunks = chunks[i:end]
+            batch_embeddings = embeddings[i:end]
+
+            ids = [c.chunk_id for c in batch_chunks]
+            # Convert embedding numpy arrays to lists of floats
+            emb_list = [emb.tolist() for emb in batch_embeddings]
+            metadatas = []
+            documents = []
+            
+            for c in batch_chunks:
+                # Chroma metadata values must be strings, ints, or floats
+                meta = {}
+                for k, v in c.metadata.items():
+                    if isinstance(v, bool):
+                        meta[k] = "true" if v else "false"
+                    elif v is not None:
+                        meta[k] = str(v)
+                
+                # Add base metadata
+                meta["language"] = c.language
+                meta["passage_id"] = c.passage_id
+                meta["strategy"] = c.strategy
+                
+                metadatas.append(meta)
+                documents.append(c.text)
+
+            collection.upsert(
+                ids=ids,
+                embeddings=emb_list,
+                metadatas=metadatas,
+                documents=documents
+            )
+
         build_time = time.perf_counter() - start
+        self.collections[collection_name] = collection
+        print(f"Collection '{collection_name}' updated in {build_time:.2f}s | Total vectors: {collection.count()}")
 
-        # Build ID and language lookup structures
-        self.chunk_ids = [c.chunk_id for c in chunks]
-        self.chunk_languages = [c.language for c in chunks]
-        self._id_to_idx = {cid: i for i, cid in enumerate(self.chunk_ids)}
-        self._lang_to_indices = {}
-        for i, lang in enumerate(self.chunk_languages):
-            self._lang_to_indices.setdefault(lang, []).append(i)
+    def load(self, collection_name: str) -> None:
+        """Load a collection reference."""
+        try:
+            collection = self.client.get_collection(name=collection_name)
+            self.collections[collection_name] = collection
+            print(f"Loaded collection '{collection_name}' | Total vectors: {collection.count()}")
+        except Exception as e:
+            print(f"Could not load collection '{collection_name}': {e}")
 
-        print(f"Index built in {build_time:.2f}s | Total vectors: {self.index.ntotal}")
-        print(f"Language distribution: {', '.join(f'{k}: {len(v)}' for k, v in self._lang_to_indices.items())}")
+    def delete(self, collection_name: str) -> None:
+        """Delete a collection."""
+        try:
+            self.client.delete_collection(name=collection_name)
+            if collection_name in self.collections:
+                del self.collections[collection_name]
+            print(f"Deleted collection '{collection_name}'")
+        except Exception as e:
+            print(f"Collection '{collection_name}' does not exist or could not be deleted: {e}")
 
     def search(
         self,
         query_embedding: np.ndarray,
+        collection_name: str,
         top_k: int = 5,
         language_filter: str | None = None,
+        is_selected_filter: bool | None = None,
     ) -> list[SearchResult]:
-        """Search the index for the nearest neighbors.
+        """Search a specific collection for nearest neighbors.
 
         Args:
             query_embedding: Query vector of shape (1, dimension).
+            collection_name: Name of the collection to search.
             top_k: Number of results to return.
             language_filter: If set, only return results in this language.
+            is_selected_filter: If set, filter by is_selected.
 
         Returns:
             List of SearchResult, sorted by score (descending).
         """
-        if self.index is None:
-            raise RuntimeError("Index not built. Call build() first.")
+        if collection_name not in self.collections:
+            self.load(collection_name)
+            
+        collection = self.collections.get(collection_name)
+        if not collection:
+             raise RuntimeError(f"Collection '{collection_name}' not found.")
 
-        query_embedding = query_embedding.astype(np.float32)
+        # Build where clause
+        where_clause = {}
+        if language_filter:
+            where_clause["language"] = language_filter
+        if is_selected_filter is not None:
+            where_clause["is_selected"] = "true" if is_selected_filter else "false"
+            
+        if not where_clause:
+            where_clause = None
+        elif len(where_clause) > 1:
+            where_clause = {"$and": [{k: {"$eq": v}} for k, v in where_clause.items()]}
+
+        emb_list = query_embedding.tolist()
+        
+        results = collection.query(
+            query_embeddings=emb_list,
+            n_results=top_k,
+            where=where_clause,
+            include=["distances", "documents", "metadatas"]
+        )
+
+        search_results = []
+        if results and results['ids'] and len(results['ids']) > 0:
+            ids = results['ids'][0]
+            distances = results['distances'][0]
+            documents = results['documents'][0]
+            metadatas = results['metadatas'][0]
+            
+            for rank, (chunk_id, dist, doc, meta) in enumerate(zip(ids, distances, documents, metadatas)):
+                # Chroma's cosine returns distance = 1 - cosine_similarity
+                # We want similarity score (higher is better)
+                score = 1.0 - dist
+                search_results.append(SearchResult(
+                    chunk_id=chunk_id,
+                    score=float(score),
+                    rank=rank,
+                    text=doc,
+                    language=meta.get("language", "unknown"),
+                    passage_id=meta.get("passage_id", ""),
+                    strategy_name=meta.get("strategy", collection_name),
+                ))
+
+        return search_results
+
+
+class FAISSIndex:
+    """In-memory FAISS index for rapid evaluation."""
+    
+    def __init__(self, dimension: int):
+        self.dimension = dimension
+        # Inner product with normalized vectors = cosine similarity
+        self.index = faiss.IndexFlatIP(dimension)
+        self.chunks = []
+        
+    def build(self, embeddings: np.ndarray, chunks: list[Chunk]) -> None:
+        """Build the FAISS index from embeddings and chunks."""
+        assert embeddings.shape[0] == len(chunks), "Embeddings and chunks must have same length"
+        # Ensure float32 for faiss and make a copy so we can normalize safely
+        embeddings = np.array(embeddings, dtype=np.float32)
+        faiss.normalize_L2(embeddings)
+        self.index.add(embeddings)
+        self.chunks.extend(chunks)
+        
+    def search(self, query_embedding: np.ndarray, top_k: int = 5) -> list[SearchResult]:
+        """Search the FAISS index."""
+        query_embedding = np.array(query_embedding, dtype=np.float32)
+        if query_embedding.ndim == 1:
+            query_embedding = query_embedding.reshape(1, -1)
         faiss.normalize_L2(query_embedding)
-
-        # If language filter is active, we search with a larger k and filter
-        search_k = top_k * 5 if language_filter else top_k
-
-        distances, indices = self.index.search(query_embedding, search_k)
-
+        
+        distances, indices = self.index.search(query_embedding, top_k)
+        
         results = []
         for rank, (dist, idx) in enumerate(zip(distances[0], indices[0])):
-            if idx < 0 or idx >= len(self.chunk_ids):
+            if idx == -1:
                 continue
-
-            chunk_id = self.chunk_ids[idx]
-            chunk_lang = self.chunk_languages[idx]
-
-            # Apply language filter
-            if language_filter and chunk_lang != language_filter:
-                continue
-
+            chunk = self.chunks[idx]
             results.append(SearchResult(
-                chunk_id=chunk_id,
+                chunk_id=chunk.chunk_id,
                 score=float(dist),
-                rank=len(results),
+                rank=rank,
+                text=chunk.text,
+                language=chunk.language,
+                passage_id=chunk.passage_id,
+                strategy_name=chunk.strategy,
             ))
-
-            if len(results) >= top_k:
-                break
-
         return results
-
-    def save(self, path: str) -> None:
-        """Save index and metadata to disk."""
-        if self.index is None:
-            raise RuntimeError("No index to save.")
-
-        os.makedirs(path, exist_ok=True)
-        index_path = os.path.join(path, "index.faiss")
-        meta_path = os.path.join(path, "metadata.json")
-
-        faiss.write_index(self.index, index_path)
-        with open(meta_path, "w", encoding="utf-8") as f:
-            json.dump({
-                "dimension": self.dimension,
-                "m": self.m,
-                "ef_construction": self.ef_construction,
-                "ef_search": self.ef_search,
-                "chunk_ids": self.chunk_ids,
-                "chunk_languages": self.chunk_languages,
-            }, f, ensure_ascii=False)
-
-        print(f"Saved index ({self.index.ntotal} vectors) and metadata to {path}")
-
-    def load(self, path: str) -> None:
-        """Load index and metadata from disk."""
-        index_path = os.path.join(path, "index.faiss")
-        meta_path = os.path.join(path, "metadata.json")
-
-        self.index = faiss.read_index(index_path)
-
-        with open(meta_path, "r", encoding="utf-8") as f:
-            meta = json.load(f)
-
-        self.dimension = meta["dimension"]
-        self.m = meta["m"]
-        self.ef_construction = meta["ef_construction"]
-        self.ef_search = meta["ef_search"]
-        self.chunk_ids = meta["chunk_ids"]
-        self.chunk_languages = meta["chunk_languages"]
-        self._id_to_idx = {cid: i for i, cid in enumerate(self.chunk_ids)}
-        self._lang_to_indices = {}
-        for i, lang in enumerate(self.chunk_languages):
-            self._lang_to_indices.setdefault(lang, []).append(i)
-
-        print(f"Loaded index ({self.index.ntotal} vectors) from {path}")

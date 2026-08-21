@@ -90,6 +90,7 @@ async def run_pipeline(
 
     latency = LatencyBreakdown()
     guardrail_flags: list[str] = []
+    guardrails_time = 0.0
 
     logger.info("pipeline_start", has_audio=audio_data is not None, has_text=text_query is not None)
 
@@ -140,7 +141,8 @@ async def run_pipeline(
         if not safety_result.passed:
             logger.warning("safety_blocked", reason=safety_result.reason)
             guardrail_flags.append(f"unsafe: {safety_result.reason}")
-            latency.guardrails_ms = round(timer.elapsed_ms, 2)
+            guardrails_time += timer.elapsed_ms
+            latency.guardrails_ms = round(guardrails_time, 2)
             latency.total_ms = round((time.perf_counter() - pipeline_start) * 1000, 2)
             return PipelineResponse(
                 transcript=transcript,
@@ -150,6 +152,7 @@ async def run_pipeline(
                 latency=latency,
                 trace_id=trace_id,
             )
+    guardrails_time += timer.elapsed_ms
 
     # ── Stage 3: Retrieval ───────────────────────────────────────────────
     with StageTimer("retrieval", logger) as timer:
@@ -174,7 +177,8 @@ async def run_pipeline(
         if not offtopic_result.passed:
             logger.warning("off_topic_blocked", top_score=retrieval_result.top_score)
             guardrail_flags.append(f"off_topic: {offtopic_result.reason}")
-            latency.guardrails_ms = round((time.perf_counter() - guardrails_start) * 1000, 2)
+            guardrails_time += timer.elapsed_ms
+            latency.guardrails_ms = round(guardrails_time, 2)
             latency.total_ms = round((time.perf_counter() - pipeline_start) * 1000, 2)
             return PipelineResponse(
                 transcript=transcript,
@@ -185,10 +189,12 @@ async def run_pipeline(
                 trace_id=trace_id,
             )
 
+    guardrails_time += timer.elapsed_ms
+
     # Handle empty retrieval
     if not retrieval_result.chunks:
         logger.warning("retrieval_empty")
-        latency.guardrails_ms = round((time.perf_counter() - guardrails_start) * 1000, 2)
+        latency.guardrails_ms = round(guardrails_time, 2)
         latency.total_ms = round((time.perf_counter() - pipeline_start) * 1000, 2)
         return PipelineResponse(
             transcript=transcript,
@@ -236,8 +242,9 @@ async def run_pipeline(
         except Exception as e:
             logger.error("grounding_check_error", error=str(e))
             # On grounding check failure, pass through (fail open)
+    guardrails_time += timer.elapsed_ms
 
-    latency.guardrails_ms = round((time.perf_counter() - guardrails_start) * 1000, 2)
+    latency.guardrails_ms = round(guardrails_time, 2)
     latency.total_ms = round((time.perf_counter() - pipeline_start) * 1000, 2)
 
     logger.info("pipeline_complete", latency=latency.model_dump(), guardrail_flags=guardrail_flags)
@@ -246,6 +253,7 @@ async def run_pipeline(
         transcript=transcript,
         detected_language=detected_language,
         answer=gen_result.answer,
+        source=gen_result.source,
         cited_chunks=retrieval_result.chunks,
         grounded=grounded,
         guardrail_flags=guardrail_flags,

@@ -75,12 +75,16 @@ app.add_middleware(
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     """Health check endpoint."""
+    total = 0
+    if retriever_service.is_loaded and hasattr(retriever_service.index, "collections"):
+        total = sum(col.count() for col in retriever_service.index.collections.values())
+
     return HealthResponse(
         status="ok",
         version="1.0.0",
         index_loaded=retriever_service.is_loaded,
         languages=settings.languages_list,
-        total_vectors=retriever_service.index.index.ntotal if retriever_service.is_loaded else 0,
+        total_vectors=total,
     )
 
 

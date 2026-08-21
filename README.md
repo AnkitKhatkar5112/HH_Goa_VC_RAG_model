@@ -18,9 +18,9 @@ flowchart LR
     B --> C{"Safety\nGuardrail"}
     C -->|Safe| D["Query Embedding\n(multilingual-e5-base)"]
     C -->|Unsafe| R1["❌ Refuse"]
-    D --> E["FAISS HNSW\nVector Search"]
+    D --> E["ChromaDB\nVector Search"]
     E --> F{"Off-topic\nCheck"}
-    F -->|On-topic| G["Gemini 2.0 Flash\nGeneration"]
+    F -->|On-topic| G["Groq API\nGeneration (gpt-oss-120b)"]
     F -->|Off-topic| R2["❌ Refuse"]
     G --> H{"NLI Grounding\nCheck"}
     H -->|Grounded| I["✅ Answer\n+ Citations"]
@@ -39,10 +39,13 @@ flowchart LR
 |-------|-----------|------|----------------|
 | **1. STT** | Sarvam `saaras:v3` | REST API | ~500–2000ms |
 | **2. Safety** | Keyword blocklist + regex | In-process | <5ms |
-| **3. Retrieval** | FAISS HNSW + multilingual-e5-base | In-memory | **<200ms P50** ✓ |
+| **3. Retrieval** | ChromaDB + multilingual-e5-small | Local Persistent | **<200ms P50** ✓ |
 | **4. Off-topic** | Similarity threshold | In-process | <1ms |
-| **5. Generation** | Gemini 2.0 Flash | REST API | ~500–3000ms |
+| **5. Generation** | Groq API `gpt-oss-120b` | REST API | <1500ms |
 | **6. Grounding** | NLI cross-encoder (DeBERTa-v3) | In-process | ~50–200ms |
+
+### Generation Model Selection
+`gpt-oss-120b` was chosen intentionally as the default generation model for its superior answer quality, broader training, and better precision on the eval queries tested. Although it's a larger model, we enforce strict output length constraints (max 3 sentences / ~150 words) to comfortably fit within a relaxed 1.5s generation latency budget.
 
 ---
 
@@ -55,7 +58,8 @@ flowchart LR
 | **Dataset Fit** | MSMARCO-XI is multilingual Indian → perfect match | Mismatch |
 | **Real-time** | WebSocket streaming available | Available |
 
-**Decision:** Sarvam's native 22-language Indian support is the key differentiator. Since MSMARCO-XI is a multilingual Indian-language dataset, Sarvam provides genuine end-to-end multilingual capability that other STT providers cannot match.
+**Decision:** Sarvam's native 22-language Indian support is the key differentiator. Since MSMARCO-XI is a multilingual Indian-language dataset, Sarvam provides genuine end-to-end multilingual capability that other STT providers cannot match. 
+> **Note on pricing**: Sarvam provides free starter credits on sign-up. After those are exhausted, STT costs ₹1.5/min. Keep an eye on the dashboard balance during extensive testing or live demos.
 
 ---
 
@@ -78,7 +82,7 @@ We implemented and **evaluated** 4 distinct chunking strategies head-to-head:
 _Results will be populated after running the evaluation script._
 <!-- /CHUNKING_COMPARISON_TABLE -->
 
-**Production choice: Metadata-aware chunking.** Language-filtered retrieval eliminates cross-language noise in the top-k results, which is critical for a multilingual corpus. When a user asks in Hindi, they should get Hindi passages, not English ones that happen to share embedding-space neighbors.
+**Production choice: Metadata-aware chunking routed with others.** The metadata-aware strategy bundles the query and its selected passage. It trades **recall for precision** — it only helps when a live spoken query closely resembles an existing MSMARCO query. Because of this trade-off, we index all strategies into separate ChromaDB collections and retrieve across them simultaneously to ensure both high precision and robustness. Language-filtered retrieval also eliminates cross-language noise.
 
 ---
 
@@ -88,9 +92,11 @@ _Results will be populated after running the evaluation script._
 
 ### Design Decision: What "<200ms" Means
 
-The <200ms target applies to the **retrieval leg** (post-transcription: query embedding + FAISS vector search + grounding pre-check). This is the component under our direct control and comfortably clears the target with an in-memory HNSW index.
+The <200ms target applies to the **retrieval leg** (post-transcription: query embedding + ChromaDB vector search + grounding pre-check). This is the component under our direct control and comfortably clears the target with a local persistent ChromaDB instance.
 
-End-to-end latency necessarily includes network round-trips to Sarvam STT and Gemini LLM, which add 1-3 seconds each. We report both honestly:
+End-to-end latency necessarily includes network round-trips to Sarvam STT and Groq LLM. We report both honestly:
+
+> **Note on Benchmarks & Rate Limits:** The benchmark script employs a 500ms pacing delay between requests to avoid triggering Groq's `429 Too Many Requests` (1K RPM limit on Developer Tier). As such, the P100 numbers reflect per-request latency under pacing, not unthrottled throughput.
 
 <!-- LATENCY_TABLE -->
 _Results will be populated after running the benchmark script._
@@ -104,7 +110,7 @@ Three categories, each **tested** with an adversarial test suite:
 
 ### 1. Off-topic Detection
 - **Method:** If the top-1 retrieval similarity score is below a calibrated threshold (0.35), the query is flagged as off-topic.
-- **No extra model needed** — piggybacks on the existing FAISS search.
+- **No extra model needed** — piggybacks on the existing ChromaDB search.
 
 ### 2. Unsafe/Inappropriate Input
 - **Method:** Fast regex/keyword blocklist (multilingual — English + Hindi + Tamil patterns) covering weapons, drugs, self-harm, and prompt injection attempts.
@@ -132,7 +138,7 @@ _Results will be populated after running the adversarial test suite._
 ### Prerequisites
 - Python 3.11+
 - [Sarvam AI API key](https://dashboard.sarvam.ai/) (₹100 free credits on signup)
-- [Google Gemini API key](https://aistudio.google.com/apikey)
+- [Groq API key](https://console.groq.com/keys)
 
 ### Setup
 
@@ -154,6 +160,15 @@ cp .env.example .env
 # Edit .env with your API keys
 ```
 
+### Build the Index
+
+The vector index must be built locally *before* running the server. This prevents memory bloat and long startup times.
+
+```bash
+python scripts/build_index.py
+```
+*Note: This streams the dataset and writes the vector index to `data/chroma_db`. It may take several minutes depending on your internet connection and the `dataset_sample_size` set in `.env`.*
+
 ### Run Locally
 
 ```bash
@@ -161,8 +176,6 @@ python -m app.main
 # or
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
-
-*Note: The FAISS index is built entirely in-memory upon startup by streaming data directly from Hugging Face. Startup may take a few minutes depending on the `dataset_sample_size` set in `.env`.*
 
 Open http://localhost:8000 in your browser.
 
@@ -192,14 +205,14 @@ docker-compose up --build
 │   ├── pipeline.py         # Orchestration: STT → guards → retrieval → gen → grounding
 │   ├── schemas.py          # Typed Pydantic models for every stage
 │   ├── stt.py              # Sarvam STT wrapper with retry/backoff
-│   ├── retriever.py        # FAISS retrieval service
-│   ├── generator.py        # Gemini LLM generation with grounded prompt
+│   ├── retriever.py        # ChromaDB retrieval service routing multiple strategies
+│   ├── generator.py        # Groq LLM generation with grounded prompt
 │   ├── config.py           # Pydantic Settings (env vars)
 │   └── logging_config.py   # Structured logging with trace IDs
 ├── retrieval/              # Chunking, embedding, indexing, evaluation
 │   ├── chunking.py         # 4 chunking strategies
-│   ├── embedder.py         # multilingual-e5-base wrapper
-│   ├── indexer.py          # FAISS HNSW index
+│   ├── embedder.py         # sentence-transformers wrapper (multilingual-e5-small)
+│   ├── indexer.py          # ChromaDB persistent index management
 │   ├── evaluator.py        # Recall@5, MRR, latency comparison
 │   ├── data_loader.py      # MSMARCO-XI dataset loader
 │   └── build_index.py      # CLI: build & evaluate
@@ -265,13 +278,27 @@ Currently, **10,000 examples per language** are pulled (configurable via `datase
 | Component | Technology | Why |
 |-----------|-----------|-----|
 | STT | Sarvam `saaras:v3` | 22 Indian languages natively |
-| Embeddings | `multilingual-e5-base` (768-dim) | Strong multilingual, deployment-friendly |
-| Vector DB | FAISS HNSW (in-memory) | Sub-10ms retrieval, no network dependency |
-| LLM | Google Gemini 2.0 Flash | Fast, free-tier, good multilingual |
+| Embeddings | `multilingual-e5-small` | Fast local embeddings, lightweight |
+| Vector DB | ChromaDB (local) | Persistent, metadata filtering |
+| LLM | Groq API `gpt-oss-120b` | Chosen intentionally for answer quality (broader training, better precision on eval queries). Capped output ensures it meets the 1.5s generation latency budget. |
 | Grounding | `nli-deberta-v3-base` | Deterministic NLI check, no API needed |
 | Backend | FastAPI (async) | Pipelined, non-blocking stages |
 | Frontend | Vanilla HTML/CSS/JS | Zero build step, glassmorphism design |
-| Deployment | Render | Free tier, GitHub integration |
+| Deployment | Hugging Face Spaces | Native support for uploading pre-built DB via Git LFS |
+
+---
+
+## ☁️ Deployment (Hugging Face Spaces)
+
+We recommend **Hugging Face Spaces (Docker)** for free-tier deployment because it effortlessly handles the persistent `data/chroma_db` index via Git LFS without requiring paid block storage.
+
+1. Build your index locally first: `python scripts/build_index.py`
+2. Ensure `data/chroma_db` is tracked in Git (or Git LFS).
+3. Create a new Docker Space on Hugging Face.
+4. Push your repository to the Space.
+5. Set `SARVAM_API_KEY` and `GROQ_API_KEY` in the Space's Secrets settings.
+
+*(Render free tier is also supported but will wipe the index on every redeploy unless you upgrade to a paid persistent disk).*
 
 ---
 

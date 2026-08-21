@@ -1,0 +1,56 @@
+{
+  "source_lang": "eng_Latn",
+  "target_lang": "hin_Deva",
+  "meta": {
+    "frequency_penalty": 0,
+    "max_tokens": 4096,
+    "model_name": "ckpt-3epochs-sft-then-400k-kd",
+    "presence_penalty": 0,
+    "temperature": 0,
+    "top_p": 1
+  },
+  "Answer": "20 मिलियन डॉलर",
+  "query_id": 317450,
+  "query_type": "NUMERIC",
+  "passages": {
+    "English_passages": [
+      "Plus, his secret talks with Katie Couric. One day last fall, Matt Lauer walked out of his 30 Rock office and took the elevator to the 51st floor to see Steve Burke, the chief executive of NBC Universal. Lauer was feeling down. Week after week, he was getting pummeled by the press for the sinking fortunes of the Today show.",
+      "The announcement of the deal will come at the end of a particularly intense week in the morning show wars, with Katie Couric hosting GMA and Sarah Palin co-hosting Today.. It also caps off almost a year of speculation that Lauer could walk away from one of the most high-profile, lucrative shows in news.",
+      "The source alleged that Lauer could be flying to and from the Hamptons up to three times a week from Manhattan heliports. High-flier: NBC confirmed on Thursday that Lauer sometimes commutes to his Hamptons home from the city by helicopter-but no word on who foots the bill for the average $1300 cost of each trip.",
+      "The Today show confirmed to MailOnline today that Lauer did chopper out to his Hamptons home, reportedly worth $15million, where he also has a 40-acre horse farm. NBC is reportedly paying for Today host Matt Lauer's helicopter rides to and from the Hamptons.",
+      "Matt Lauer has renewed his contract with NBC News and will stay as the co-host of Today for several more years, the New York Times reported on Friday.",
+      "Posted: 04/05/2012 6:59 pm EDT Updated: 06/05/2012 5:12 am EDT. Visit msnbc.com for breaking news, world news, and news about the economy. Getty Images. Matt Lauer has signed a new deal to remain with the Today show, the New York Times reported late Thursday. The multi-year deal was signed for an undisclosed amount, but it's widely believed that Lauer will be making an eye-popping $25 million a year.",
+      "NBC is footing the bill for their $20million-a-year man Matt Lauer's helicopter jaunts to and from his Hamptons estate, it was claimed today.",
+      "Matt Lauer holds the record as the longest-sitting anchor on ‘Today.’. He’ll be an eary riser for at least the next two years. Matt Lauer has extended his $20 million-a-year deal with NBC News to remain as co-host with the “Today” show through 2016, a source tells the Daily News. The move comes as speculation had been rampant that he would leave the show once his current deal expires in the next few months.",
+      "Lauer has extended his $20 million a year deal with the show-even as speculation had been rampant that he would leave once his current deal expires in the next few months.",
+      "In June, Lauer signed a two-year extension on his annual $20million contract with Today, calling it 'the best job in broadcasting'. Matt Lauer and his wife Annette pictured on August 31 this year at the 39th Annual Hampton Classic Horse Show Grand Prix in Bridgehampton, New York."
+    ],
+    "Translated_passages": [
+      "इसके अलावा, केटी कोरिक के साथ उनकी गुप्त बातचीत। पिछले पतझड़ के एक दिन, मैट लॉयर अपने 30 रॉक कार्यालय से बाहर निकले और एनबीसी यूनिवर्सल के मुख्य कार्यकारी स्टीव बर्क से मिलने के लिए 51वीं मंजिल पर लिफ्ट ली। लॉयर उदास महसूस कर रहे थे। सप्ताह दर सप्ताह, उन्हें टुडे शो की डूबती किस्मत के लिए प्रेस द्वारा पीटा जा रहा था।",
+      "सौदे की घोषणा सुबह के शो वॉर्स में एक विशेष रूप से तीव्र सप्ताह के अंत में होगी, जिसमें केटी कोरिक जी.एम.ए. की मेजबानी करेंगी और सारा पेलिन टुडे की सह-मेजबानी करेंगी। यह लगभग एक साल की अटकलों को भी समाप्त करता है कि लॉयर समाचार में सबसे उच्च-प्रोफाइल, आकर्षक शो में से एक से दूर जा सकता है।",
+      "सूत्र ने आरोप लगाया कि लॉयर मैनहट्टन के हेलीपोर्ट से सप्ताह में तीन बार हैम्पटन तक उड़ान भर सकता है। हाई-फ्लायर: एन.बी.सी. ने गुरुवार को पुष्टि की कि लॉयर कभी-कभी हेलीकॉप्टर से शहर से अपने हैम्पटन घर तक जाता है, लेकिन इस बात पर कोई शब्द नहीं है कि प्रत्येक यात्रा की औसत 1300 डॉलर की लागत का भुगतान कौन करता है।",
+      "टुडे शो ने आज मेलऑनलाइन को पुष्टि की कि लॉयर ने अपने हैम्पटन के घर को छोड़ दिया, जिसकी कीमत कथित तौर पर 1.5 करोड़ डॉलर थी, जहाँ पर उनका 40 एकड़ का घोड़े का खेत भी है। एनबीसी कथित तौर पर टुडे के मेज़बान मैट लॉयर की हैम्पटन आने-जाने के लिए हेलीकॉप्टर के लिए भुगतान कर रहा है।",
+      "न्यूयॉर्क टाइम्स ने शुक्रवार को बताया कि मैट लॉयर ने एन.बी.सी. न्यूज के साथ अपने अनुबंध को नवीनीकृत किया है और कई और वर्षों तक टुडे के सह-मेजबान के रूप में बने रहेंगे।",
+      "पोस्ट किया गया: 04/05/2012 6:59 pm EDT अपडेट: 06/05/2012 5:12 am EDT. msnbc.com पर ब्रेकिंग न्यूज, विश्व समाचार और अर्थव्यवस्था के बारे में समाचार देखें। गेटी इमेजेज। मैट लॉयर ने टुडे शो, द न्यूयॉर्क टाइम्स के साथ रहने के लिए एक नए सौदे पर हस्ताक्षर किए हैं, गुरुवार को देर से बताया। इस बहु-वर्षीय सौदे पर एक अज्ञात राशि के लिए हस्ताक्षर किए गए थे, लेकिन यह व्यापक रूप से माना जाता है कि लॉयर एक आंखों को फटाने वाली 25 मिलियन डॉलर प्रति वर्ष की दर से कमाई करेंगे।",
+      "आज यह दावा किया गया कि एन.बी.सी. उनके सालाना 2 करोड़ डॉलर के खर्च के लिए, मैट लॉयर के हैम्पटन्स एस्टेट के आने-जाने के लिए हेलीकॉप्टर का भुगतान कर रहा है।",
+      "मैट लॉयर 'टुडे' पर सबसे लंबे समय तक काम करने वाले एंकर के रूप में रिकॉर्ड रखते हैं। वह कम से कम अगले दो साल तक डेली न्यूज़ के लिए एक ईयरी राइजर रहेंगे। मैट लॉयर ने 2016 तक 'टुडे' शो के साथ सह-मेज़बान के रूप में बने रहने के लिए एनबीसी न्यूज़ के साथ अपने 2 करोड़ डॉलर प्रति वर्ष के सौदे को बढ़ा दिया है, एक सूत्र डेली न्यूज़ को बताता है। यह कदम तब आया है जब अटकलें लगाई जा रही थीं कि वह अगले कुछ महीनों में अपने वर्तमान सौदे की समाप्ति के बाद शो छोड़ देंगे।",
+      "लॉयर ने शो के साथ अपने सालाना 2 करोड़ डॉलर के सौदे को बढ़ा दिया है, जबकि अटकलें लगाई जा रही थीं कि वह अगले कुछ महीनों में अपना वर्तमान सौदा समाप्त होने पर इसे छोड़ देंगे।",
+      "जून में, लॉयर ने टुडे के साथ अपने वार्षिक 2 करोड़ डॉलर के अनुबंध पर दो साल की विस्तारित अवधि पर हस्ताक्षर किए, जिसे उन्होंने 'प्रसारण में सबसे अच्छी नौकरी' बताया। मैट लॉयर और उनकी पत्नी एनेट ने 31 अगस्त को इस साल न्यूयॉर्क के ब्रिजहैम्प्टन में 39वें वार्षिक हैम्पटन क्लासिक हॉर्स शो ग्रां प्री में चित्रित किया।"
+    ],
+    "is_selected": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ]
+  },
+  "Eng_Query": "how much does matt lauer make a year",
+  "Eng_Answer": "$20 million",
+  "query": "मैट लॉयर एक साल में कितना कमाता है"
+}

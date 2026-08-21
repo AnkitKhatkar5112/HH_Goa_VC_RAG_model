@@ -12,7 +12,7 @@ class Settings(BaseSettings):
 
     # ── API Keys ──────────────────────────────────────────────────────────
     sarvam_api_key: str = Field(default="", description="Sarvam AI API key for STT")
-    google_api_key: str = Field(default="", description="Google Gemini API key")
+    groq_api_key: str = Field(default="", description="Groq API key")
 
     # ── Application ───────────────────────────────────────────────────────
     app_env: Literal["development", "production"] = "production"
@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     port: int = 8000
 
     # ── Embedding & Retrieval ─────────────────────────────────────────────
-    embedding_model: str = "intfloat/multilingual-e5-base"
-    faiss_index_path: str = "data/faiss_index"
+    embedding_model: str = "intfloat/multilingual-e5-small"
+    chroma_db_dir: str = "data/chroma_db"
     chunk_strategy: str = "metadata_aware"
     top_k: int = 5
 
@@ -43,13 +43,13 @@ class Settings(BaseSettings):
     stt_max_retries: int = 3
 
     # ── LLM Generation Settings ───────────────────────────────────────────
-    llm_model: str = "gemini-2.0-flash"
-    llm_timeout_seconds: float = 15.0
+    llm_model: str = "openai/gpt-oss-120b"
+    llm_timeout_seconds: float = 1.5
     llm_max_retries: int = 3
 
     # ── Dataset ───────────────────────────────────────────────────────────
     dataset_languages: str = "en,hi,ta"
-    dataset_sample_size: int = 10000
+    dataset_sample_size: int = 5000
 
     # ── NLI Model for Grounding ───────────────────────────────────────────
     nli_model: str = "cross-encoder/nli-deberta-v3-base"
@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     def languages_list(self) -> list[str]:
         return [lang.strip() for lang in self.dataset_languages.split(",")]
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 # Singleton instance

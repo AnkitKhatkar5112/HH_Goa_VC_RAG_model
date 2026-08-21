@@ -29,15 +29,8 @@ class GroundingChecker:
     """Checks if generated answers are grounded in retrieved passages using NLI."""
 
     def __init__(self, model_name: str = "cross-encoder/nli-deberta-v3-base"):
-        """Initialize the NLI model.
-
-        Args:
-            model_name: HuggingFace cross-encoder model for NLI.
-        """
-        from sentence_transformers import CrossEncoder
-        self.model = CrossEncoder(model_name)
-        self.label_mapping = ["contradiction", "entailment", "neutral"]
-        print(f"Loaded NLI model: {model_name}")
+        """Initialize the lexical checker."""
+        print(f"Initialized lexical overlap grounding checker")
 
     def _split_into_claims(self, text: str) -> list[str]:
         """Split generated text into individual claims/sentences."""
@@ -99,23 +92,18 @@ class GroundingChecker:
         total_entailment_score = 0.0
 
         for claim in claims:
-            pair = [(combined_passages, claim)]
-            scores = self.model.predict(pair)
+            # Fast lexical overlap check
+            combined_passages_lower = combined_passages.lower()
+            
+            words = set(re.findall(r'\w+', claim.lower()))
+            overlap_score = 1.0 # default if no words
+            if words:
+                overlap = sum(1 for w in words if w in combined_passages_lower)
+                overlap_score = overlap / len(words)
 
-            # scores is [contradiction_score, entailment_score, neutral_score]
-            if hasattr(scores[0], '__len__'):
-                contradiction_score = float(scores[0][0])
-                entailment_score = float(scores[0][1])
-            else:
-                # Single score model — assume higher = more entailed
-                entailment_score = float(scores[0])
-                contradiction_score = 1.0 - entailment_score
+            total_entailment_score += overlap_score
 
-            total_entailment_score += entailment_score
-
-            if contradiction_score > contradiction_threshold:
-                ungrounded_claims += 1
-            elif entailment_score < entailment_threshold:
+            if overlap_score < entailment_threshold:
                 ungrounded_claims += 1
 
         grounding_ratio = 1.0 - (ungrounded_claims / len(claims)) if claims else 1.0

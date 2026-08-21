@@ -22,6 +22,13 @@ import numpy as np
 import pandas as pd
 from tabulate import tabulate
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
@@ -104,6 +111,7 @@ def run_benchmark(
                 data = resp.json()
 
                 latency = data.get("latency", {})
+                flags = data.get("guardrail_flags", [])
                 results.append({
                     "query_idx": i,
                     "language": q["language"],
@@ -113,6 +121,7 @@ def run_benchmark(
                     "guardrails_ms": latency.get("guardrails_ms", 0),
                     "total_ms": latency.get("total_ms", 0),
                     "wall_time_ms": round(wall_time_ms, 2),
+                    "guardrail_flags": flags,
                     "status": "ok",
                 })
 
@@ -120,6 +129,11 @@ def run_benchmark(
                 print(status_char, end="", flush=True)
 
             except Exception as e:
+                # Basic backoff if we hit rate limits (429) or other errors
+                if hasattr(e, 'response') and e.response.status_code == 429:
+                    print("429 Rate Limit Hit - Backing off for 10s...", end="", flush=True)
+                    time.sleep(10)
+                
                 results.append({
                     "query_idx": i,
                     "language": q["language"],
@@ -129,11 +143,12 @@ def run_benchmark(
                     "guardrails_ms": 0,
                     "total_ms": 0,
                     "wall_time_ms": 0,
+                    "guardrail_flags": [],
                     "status": f"error: {str(e)[:50]}",
                 })
                 print("E", end="", flush=True)
 
-            time.sleep(0.1)  # Rate limiting
+            time.sleep(2.5)  # Spaced to 2.5s to respect 30 requests/minute limit
 
     print(f"\n\nCompleted {len(results)} queries.")
 
@@ -190,9 +205,14 @@ def generate_report(df: pd.DataFrame, output_dir: str = "bench/results") -> str:
     retrieval_p50 = np.percentile(ok["retrieval_ms"].values, 50)
     total_p50 = np.percentile(ok["total_ms"].values, 50)
 
+    # Count guardrail refusals
+    refused = len([r for r in ok["guardrail_flags"] if len(r) > 0])
+    fully_generated = len(ok) - refused
+
     summary = f"""# Latency Benchmark Report
 
 **Queries**: {len(ok)} successful out of {len(df)} total
+**Guardrails**: {fully_generated} fully generated, {refused} refused (off-topic/unsafe/ungrounded)
 **Target**: Deployed API
 
 ## Stage-by-Stage Latency
@@ -206,7 +226,17 @@ def generate_report(df: pd.DataFrame, output_dir: str = "bench/results") -> str:
 - End-to-end latency includes STT, retrieval, LLM generation, and guardrail checks.
 - The retrieval component (chunk lookup + vector search) is the part under direct control
   and is the component the <200ms requirement targets.
+
+## Slowest Retrieval Queries (P100 Investigation)
+
+The top 5 slowest queries for the retrieval stage were:
 """
+    
+    # Sort by retrieval latency descending
+    slowest_retrieval = ok.sort_values("retrieval_ms", ascending=False).head(5)
+    for _, row in slowest_retrieval.iterrows():
+        summary += f"- Query #{row['query_idx']} | Retrieval: {row['retrieval_ms']:.1f}ms | Total: {row['total_ms']:.1f}ms | Language: {row['language']}\n"
+
 
     # Save markdown
     md_path = os.path.join(output_dir, "latency_summary.md")
